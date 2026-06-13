@@ -1,0 +1,21 @@
+[package]
+name = "gm-save-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Encrypted slot-based save system — core logic for the gm-save GameMaker extension"
+keywords    = ["gamemaker", "save", "encryption", "chacha20", "ffi"]
+categories  = ["game-development", "cryptography"]
+
+[dependencies]
+chacha20poly1305 = { workspace = true }
+pbkdf2           = { workspace = true }
+sha2             = { workspace = true }
+rand             = { workspace = true }
+thiserror        = { workspace = true }
+zeroize          = { workspace = true }
+
+[dev-dependencies]
+tempfile         = { workspace = true }

@@ -1,0 +1,41 @@
+[package]
+name        = "gm-save-ffi"
+description = "GameMaker native extension (.dll/.so/.dylib) for gm-save — FFI layer"
+
+# We inherit metadata from [workspace.package]
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+authors.workspace    = true
+
+# This crate is compiled into a .dll file and is not published on crates.io.
+# Distributed through GitHub Releases as a compiled binary.
+publish = false
+
+# ─────────────────────────────────────────────────────────────
+# cdylib is the only type that gives us .dll / .so / .dylib
+# compatible with GameMaker (C ABI, no Rust mangling).
+# ─────────────────────────────────────────────────────────────
+[lib]
+name       = "gm_save"   # итоговый файл будет gm_save.dll, не gm_save_ffi.dll
+crate-type = ["cdylib"]
+
+# ─────────────────────────────────────────────────────────────
+# Dependencies - taken from [workspace.dependencies]
+# ─────────────────────────────────────────────────────────────
+[dependencies]
+# All the logic lives in the core; ffi just wraps it in C functions.
+gm-save-core = { workspace = true }
+
+# ─────────────────────────────────────────────────────────────
+# Development dependencies (for cargo test only)
+# ─────────────────────────────────────────────────────────────
+[dev-dependencies]
+# serial_test — ensures that tests with global state (MANAGER)
+# never run in parallel. Without it, tests will fail randomly
+# due to race conditions for the global SaveManager.
+serial_test = { workspace = true }
+
+# Temporary directories for tests
+tempfile = { workspace = true }

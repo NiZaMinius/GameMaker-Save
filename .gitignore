@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────────────────────
+# Rust
+# ─────────────────────────────────────────────────────────────
+
+# Build output — never commit this, it is fully reproducible
+/target/
+
+# Dependency lock file.
+# For libraries (gm-save-core) the convention is to NOT commit Cargo.lock.
+# For the DLL (gm-save-ffi) reproducible builds matter more, but since
+# this is a workspace we follow the library convention and exclude it.
+# CI pins versions via --locked after generating a fresh lock.
+Cargo.lock
+
+# ─────────────────────────────────────────────────────────────
+# gm-save runtime artifacts
+# ─────────────────────────────────────────────────────────────
+
+# Encrypted save slot files produced during testing
+*.gmsv
+
+# Atomic write temp files (written then renamed — should never persist,
+# but exclude defensively in case of a crash mid-test)
+*.tmp
+
+# ─────────────────────────────────────────────────────────────
+# GameMaker
+# ─────────────────────────────────────────────────────────────
+
+# GameMaker IDE cache / temp folders
+*.yyz
+GMS2TEMP/
+Temp/
+
+# Local GameMaker project user settings (machine-specific)
+*.config.json
+
+# ─────────────────────────────────────────────────────────────
+# OS
+# ─────────────────────────────────────────────────────────────
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ─────────────────────────────────────────────────────────────
+# Editors
+# ─────────────────────────────────────────────────────────────
+
+# Zed
+.zed/
+
+# VS Code (in case someone else opens the project)
+.vscode/
+*.code-workspace
+
+# JetBrains / RustRover
+.idea/
+*.iml
+
+# ─────────────────────────────────────────────────────────────
+# CI / release artifacts (generated, not source)
+# ─────────────────────────────────────────────────────────────
+
+# Compiled extension packages — produced by CI and uploaded to Releases
+dist/
+*.yymps
+*.zip

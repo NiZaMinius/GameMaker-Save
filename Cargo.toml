@@ -1,0 +1,64 @@
+[workspace]
+members  = ["gm-save-core", "gm-save-ffi"]
+resolver = "2"
+
+# ─────────────────────────────────────────────────────────────
+# Shared package metadata — child crates inherit via
+# field.workspace = true to avoid duplication.
+# ─────────────────────────────────────────────────────────────
+[workspace.package]
+version     = "0.1.0"
+edition     = "2021"
+license     = "MIT OR Apache-2.0"
+repository  = "https://github.com/NiZaMinius/GameMaker-Save"
+authors     = ["NiZaMinius"]
+
+# ─────────────────────────────────────────────────────────────
+# Release profile — applied when building the final .dll.
+# Only takes effect with `cargo build --release`.
+# ─────────────────────────────────────────────────────────────
+[profile.release]
+# Maximum speed optimisation across all crates.
+opt-level = 3
+
+# Link Time Optimisation: the linker can inline and dead-strip
+# across crate boundaries, shrinking the DLL and speeding it up.
+# "fat" sends full IR to the linker (slower build, best result).
+lto = "fat"
+
+# Must be 1 when lto = "fat"; more units would split the IR and
+# defeat the purpose of fat LTO.
+codegen-units = 1
+
+# Drop all debug symbols from the final binary.
+# Saves ~30-50 % DLL size with zero runtime cost.
+strip = "symbols"
+
+# Unwind tables add size and are useless across a C FFI boundary —
+# GameMaker cannot catch Rust panics anyway.
+# "abort" removes the unwinding machinery entirely.
+panic = "abort"
+
+# ─────────────────────────────────────────────────────────────
+# Workspace dependencies — child crates opt in via
+# dep = { workspace = true }.
+# Versions are managed in one place; no drift between crates.
+# ─────────────────────────────────────────────────────────────
+[workspace.dependencies]
+
+# Cryptography
+chacha20poly1305 = "0.10"
+pbkdf2           = { version = "0.12", features = ["simple"] }
+sha2             = "0.10"
+
+# Utilities
+rand      = "0.8"
+thiserror = "1"
+zeroize   = { version = "1", features = ["zeroize_derive"] }
+
+# Dev / test dependencies
+tempfile    = "3"
+serial_test = "3"
+
+# Internal: ffi crate depends on core
+gm-save-core = { path = "gm-save-core" }
