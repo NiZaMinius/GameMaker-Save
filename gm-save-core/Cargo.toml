@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+readme = "README.md"
 description = "Encrypted slot-based save system — core logic for the gm-save GameMaker extension"
 keywords    = ["gamemaker", "save", "encryption", "chacha20", "ffi"]
 categories  = ["game-development", "cryptography"]
