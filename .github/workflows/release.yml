@@ -1,0 +1,126 @@
+name: Publish Release
+
+# ─────────────────────────────────────────────────────────────
+# Triggers only when a tag like "v0.1.0" is pushed.
+# Nothing runs on regular commits — this workflow is release-only.
+# ─────────────────────────────────────────────────────────────
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ===========================================================
+  # JOB 1 — Test suite
+  # Runs the full test suite on all three platforms BEFORE any
+  # binary is built. If a test fails here, the build job below
+  # never runs and no broken release gets published.
+  # ===========================================================
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run all tests (core + ffi)
+        run: cargo test --workspace --verbose
+
+  # ===========================================================
+  # JOB 2 — Build release binaries
+  # Each OS builds its own native cdylib in parallel:
+  #   Windows  → gm_save.dll
+  #   Linux    → libgm_save.so
+  #   macOS    → libgm_save.dylib
+  #
+  # All three run on their OWN native runner — no cross-compilation
+  # needed, since GitHub provides real Windows/Linux/macOS machines.
+  # ===========================================================
+  build:
+    name: Build (${{ matrix.os }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            built_file: target/x86_64-pc-windows-msvc/release/gm_save.dll
+            asset_name: gm_save-windows-x64.dll
+
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            built_file: target/x86_64-unknown-linux-gnu/release/libgm_save.so
+            asset_name: gm_save-linux-x64.so
+
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            built_file: target/x86_64-apple-darwin/release/libgm_save.dylib
+            asset_name: gm_save-macos-x64.dylib
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build release cdylib
+        run: cargo build --release --target ${{ matrix.target }} -p gm-save-ffi
+
+      - name: Rename artifact for clarity
+        shell: bash
+        run: cp "${{ matrix.built_file }}" "${{ matrix.asset_name }}"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.asset_name }}
+
+  # ===========================================================
+  # JOB 3 — Publish GitHub Release
+  # Downloads all three platform binaries from the build job,
+  # adds the GML wrapper script, and attaches everything to a
+  # single GitHub Release matching the pushed tag.
+  # ===========================================================
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Flatten artifacts and add GML script
+        run: |
+          mkdir -p release-files
+          find dist -type f -exec cp {} release-files/ \;
+          cp gml/gm_save.gml release-files/
+          ls -la release-files
+
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
