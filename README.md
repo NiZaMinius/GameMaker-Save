@@ -70,7 +70,7 @@ gm-save/
 
 #### Step 1 — Download the release
 
-Go to [Releases](https://github.com/NiZaMinius/gm-save/releases) and download:
+Go to [Releases](https://github.com/NiZaMinius/GameMaker-Save/releases) and download:
 
 - `gm_save.dll` — compiled native extension (Windows x64)
 - `gm_save.gml` — GML helper script
@@ -251,7 +251,7 @@ gm-save/
 
 #### Шаг 1 — Скачай релиз
 
-Перейди в [Releases](https://github.com/NiZaMinius/gm-save/releases) и скачай:
+Перейди в [Releases](https://github.com/NiZaMinius/GameMaker-Save/releases) и скачай:
 
 - `gm_save.dll` — нативное расширение (Windows x64)
 - `gm_save.gml` — GML-скрипт с обёртками
